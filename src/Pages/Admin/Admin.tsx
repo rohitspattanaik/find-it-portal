@@ -1,11 +1,27 @@
-import React from 'react';
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../contexts/AuthContext";
 
-const Admin: React.FC = () => {
+const Admin = ({children}: {children: React.ReactNode}) => {
+
+  const { isAdmin } = useAuth();
+
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    navigate("/admin/users");
+  }, []);
+
+  useEffect(() => {
+    if (!isAdmin) {
+      navigate("/");
+    }
+  }, [isAdmin]);
+
   return (
-    <div>
-      <h2>Admin Dashboard</h2>
-      <p>Welcome to the admin panel.</p>
-    </div>
+    <>
+      {children}
+    </>
   );
 };
 
