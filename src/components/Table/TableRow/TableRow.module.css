@@ -1,0 +1,12 @@
+.tableRow {
+    background-color: #ffffff;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.tableRow:last-child {
+    border-bottom: none;
+}
+
+.tableRowCell {
+    padding: 12px 16px;
+}

@@ -1,0 +1,12 @@
+@import "../../../constants/constants.css";
+
+.tableHeaderRow {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.tableHeaderCell {
+    padding: 12px 16px;
+    font-weight: 600;
+    text-align: left;
+}
