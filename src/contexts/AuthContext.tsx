@@ -9,6 +9,7 @@ interface AuthContextType {
     setIsAuthenticated: (isAuthenticated: boolean) => void;
     isAdmin: boolean;
     setIsAdmin: (isAdmin: boolean) => void;
+    logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -18,27 +19,41 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [session, setSession] = useState<Session | null>(null);
     const [isAdmin, setIsAdmin] = useState(false);
 
+    const fetchSession = async () => {
+        try {
+            const session = await getSession();
+            setSession(session);
+            setIsAdmin(session.isAdmin);
+            setIsAuthenticated(true);
+        } catch (error) {
+            console.error(error);
+            setIsAuthenticated(false);
+            setSession(null);
+        }
+    }
+
+    const logout = async () => {
+        await logout();
+        setIsAuthenticated(false);
+        setSession(null);
+    }
+
+    //initial session check to see if there's a cookie and if it's valid
+    useEffect(() => {
+        fetchSession();
+    }, []);
 
     // check the session
     useEffect(() => {
-        const fetchSession = async () => {
-            try {
-                const session = await getSession();
-                setSession(session);
-                setIsAuthenticated(true);
-                setIsAdmin(session.isAdmin);
-            } catch (error) {
-                console.error(error);
-                setIsAuthenticated(false);
-            }
+        if (isAuthenticated) {
+            fetchSession();
         }
-        fetchSession();
         const interval = setInterval(fetchSession, sessionRefreshInterval);
         return () => clearInterval(interval);
-    }, []);
+    }, [isAuthenticated]);
     
     return (
-        <AuthContext.Provider value={{ isAuthenticated, setIsAuthenticated, isAdmin, setIsAdmin }}>
+        <AuthContext.Provider value={{ isAuthenticated, setIsAuthenticated, isAdmin, setIsAdmin, logout }}>
             {children}
         </AuthContext.Provider>
     );
