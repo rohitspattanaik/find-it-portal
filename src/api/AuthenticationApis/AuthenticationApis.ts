@@ -1,9 +1,11 @@
 import { API_BASE_URL } from "../constants";
-import type { AuthenticationRequest, Session } from "./Authentication.dto";
+import type { AuthenticationRequest, Session } from "./AuthenticationApis.dto";
+
+const AUTHN_URL = `${API_BASE_URL}/v1/authn`;
 
 export const authenticate = async (authenticationRequest: AuthenticationRequest): Promise<Session> => {
     
-    const response = await fetch(`${API_BASE_URL}/v1/authn`, {
+    const response = await fetch(AUTHN_URL, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -20,7 +22,7 @@ export const authenticate = async (authenticationRequest: AuthenticationRequest)
 
 export const getSession = async (): Promise<Session> => {
 
-    const response = await fetch(`${API_BASE_URL}/v1/authn`, {
+    const response = await fetch(AUTHN_URL, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -34,7 +36,7 @@ export const getSession = async (): Promise<Session> => {
 }
 
 export const logout = async (): Promise<void> => {
-    const response = await fetch(`${API_BASE_URL}/v1/authn`, {
+    const response = await fetch(AUTHN_URL, {
         method: 'DELETE',
         headers: {
             'Content-Type': 'application/json',

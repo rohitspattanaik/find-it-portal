@@ -12,15 +12,9 @@ const Admin = ({children}: {children: React.ReactNode}) => {
     navigate("/admin/users");
   }, []);
 
-  useEffect(() => {
-    if (!isAdmin) {
-      navigate("/");
-    }
-  }, [isAdmin]);
-
   return (
     <>
-      {children}
+      {isAdmin && children}
     </>
   );
 };

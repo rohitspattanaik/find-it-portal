@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { getSession } from "../api/Authentication/Authentication";
-import type { Session } from "../api/Authentication/Authentication.dto";
+import { authenticate, getSession, logout } from "../api/AuthenticationApis/AuthenticationApis";
+import type { Session } from "../api/AuthenticationApis/AuthenticationApis.dto";
+import { useNavigate } from "react-router-dom";
 
 const sessionRefreshInterval = 30000; // 30 seconds
 
@@ -9,7 +10,8 @@ interface AuthContextType {
     setIsAuthenticated: (isAuthenticated: boolean) => void;
     isAdmin: boolean;
     setIsAdmin: (isAdmin: boolean) => void;
-    logout: () => void;
+    login: (email: string) => Promise<void>;
+    clearSession: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -18,6 +20,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [session, setSession] = useState<Session | null>(null);
     const [isAdmin, setIsAdmin] = useState(false);
+    const navigate = useNavigate();
 
     const fetchSession = async () => {
         try {
@@ -28,14 +31,31 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         } catch (error) {
             console.error(error);
             setIsAuthenticated(false);
+            setIsAdmin(false);
             setSession(null);
         }
     }
 
-    const logout = async () => {
+    const login = async (email: string) => {
+        try {
+            const session = await authenticate({ email });
+            setSession(session);
+            setIsAdmin(session.isAdmin);
+            setIsAuthenticated(true);
+        } catch (error) {
+            setIsAuthenticated(false);
+            setIsAdmin(false);
+            setSession(null);
+            throw error;
+        }
+    }
+
+    const clearSession = async () => {
         await logout();
         setIsAuthenticated(false);
+        setIsAdmin(false);
         setSession(null);
+        navigate('/');
     }
 
     //initial session check to see if there's a cookie and if it's valid
@@ -53,7 +73,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }, [isAuthenticated]);
     
     return (
-        <AuthContext.Provider value={{ isAuthenticated, setIsAuthenticated, isAdmin, setIsAdmin, logout }}>
+        <AuthContext.Provider value={{ isAuthenticated, setIsAuthenticated, isAdmin, setIsAdmin, clearSession, login }}>
             {children}
         </AuthContext.Provider>
     );

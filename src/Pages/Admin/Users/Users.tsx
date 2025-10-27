@@ -1,6 +1,7 @@
-import Table from "../../../components/Table/Table";
 import Admin from "../Admin";
-import styles from "./Users.module.css";
+import { SearchAndFilterRequestor, type QueryParams } from "../../../components/SearchAndFilterRequestor/SearchAndFilterRequestor";
+import UsersTable from "./UsersTable/UsersTable";
+import { listUsers } from "../../../api/UsersApis/UsersApis";
 
 const mockUsers = [
     {
@@ -33,26 +34,21 @@ const mockUsers = [
     }
 ];
 
-const headers = [
-    "First Name",
-    "Last Name",
-    "Email"
-];
-
 const Users = () => {
 
-    const rows = mockUsers.map((user) => {
+    const getUsers = async (queryParams?: QueryParams) => {
+        const response = await listUsers(queryParams);
         return {
-            index: user.id,
-            data: [user.firstName, user.lastName, user.email]
-        };
-    });
+            data: response.users,
+            pagination: response.pagination
+        }
+    }
 
     return (
         <Admin>
-            <div>
-                <Table headers={{ headers }} rows={rows} />
-            </div>
+            <SearchAndFilterRequestor dataRequestor={getUsers}>
+                <UsersTable />
+            </SearchAndFilterRequestor>
         </Admin>
     );
 };

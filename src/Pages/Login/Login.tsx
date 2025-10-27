@@ -1,70 +1,16 @@
 import { useEffect, useState } from 'react';
-import { Center, Flex, Input, Button, Box, Paper, Text } from '@mantine/core';
+import { Center, Flex, Input, Button, Paper, Text, Loader } from '@mantine/core';
 import { IconAt } from '@tabler/icons-react';
-import { authenticate } from '../../api/Authentication/Authentication';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-// const Login = () => {
-//   const [email, setEmail] = useState('');
-//   const [error, setError] = useState('');
-//   const navigate = useNavigate();
-//   const { isAuthenticated, setIsAuthenticated, setIsAdmin } = useAuth();
-
-//   const handleSubmit = async (e: React.FormEvent) => {
-//     e.preventDefault();
-//     try {
-//         const session = await authenticate({ email });
-//         setIsAuthenticated(true);
-//         setIsAdmin(session.isAdmin);
-
-//         // navigate to home
-//         navigate('/');
-//     } catch (error: any) {
-//       console.error(error);
-//         setError("Authentication failed");
-//     }
-
-//   };
-
-//   useEffect(() => {
-//     if (isAuthenticated) {
-//         navigate('/');
-//     }
-//   }, [navigate, isAuthenticated]);
-
-//   return (
-//     <div className={styles.container}>
-//       <form className={styles.form} onSubmit={handleSubmit}>
-//         <h1 className={styles.title}>Welcome Back</h1>
-
-//         <div className={styles.inputGroup}>
-//           <label htmlFor="email" className={styles.label}>
-//             Email
-//           </label>
-//           <input
-//             id="email"
-//             type="email"
-//             className={styles.input}
-//             value={email}
-//             onChange={(e) => setEmail(e.target.value)}
-//             required
-//           />
-//         </div>
-
-//         <Button text="Sign In" onClick={handleSubmit} type="submit" />
-
-//         {error && <div className={styles.error}>{error}</div>}
-//       </form>
-//     </div>
-//   );
-// };
 
 const Login = () => {
 
   const [email, setEmail] = useState<string>('');
   const [isEmailValid, setIsEmailValid] = useState<boolean>(false);
-  const { isAuthenticated, setIsAuthenticated, isAdmin, setIsAdmin } = useAuth();
+  const { isAuthenticated, login } = useAuth();
   const [error, setError] = useState<string>('');
+  const [loading, setLoading] = useState<boolean>(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -82,15 +28,18 @@ const Login = () => {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    try {
-      const session = await authenticate({ email });
-      console.log(session);
-      setIsAuthenticated(true);
-      setIsAdmin(session.isAdmin);
 
+    validateEmail();
+    if (!isEmailValid) return;
+
+    try {
+      setLoading(true);
+      await login(email);
+      setLoading(false);
       // navigate to home
       navigate('/');
     } catch (error: any) {
+      setLoading(false);
       console.error(error);
       setError("Authentication failed");
     }
@@ -100,8 +49,9 @@ const Login = () => {
     <Center h="64vh">
       <Paper bg="gray.1" p="md" shadow="md" radius="md" w="24vw">
         <Flex direction="column" justify="center" align="center" gap="sm">
-          <Input w="100%" placeholder="Enter your email" value={email} leftSection={<IconAt size={16} />} onChange={(e) => setEmail(e.currentTarget.value)} onBlur={validateEmail} />
-          <Button w="100%" onClick={handleLogin} disabled={!isEmailValid}>Login</Button>
+          <Input w="100%" placeholder="Enter your email" value={email} leftSection={<IconAt size={16} />} onChange={(e) => setEmail(e.currentTarget.value)} onSubmit={handleLogin}/>
+          {!loading && <Button w="100%" onClick={handleLogin}>Login</Button>}
+          {loading && <Loader />}
           {error && <Text c="red">{error}</Text>}
         </Flex>
       </Paper>
